@@ -1,0 +1,13 @@
+[project]
+name = "token-distribution-and-coherence"
+version = "0.1.0"
+description = "LLM token distribution analysis and coherence evaluation tool"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.0.0",
+    "datasets>=2.0.0",
+    "transformers>=4.40.0",
+    "tqdm>=4.60.0",
+    "huggingface_hub>=0.20.0",
+]
