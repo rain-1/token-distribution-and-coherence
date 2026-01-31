@@ -69,4 +69,25 @@ Create a `coherence_config.json`:
 
 ## Credits
 
-Coherence evaluation rubric based on [GoodFire-Autosteer-Evaluation](https://github.com/Eitan-Sprejer/GoodFire-Autosteer-Evaluation).
+- Coherence evaluation rubric based on [GoodFire-Autosteer-Evaluation](https://github.com/Eitan-Sprejer/GoodFire-Autosteer-Evaluation)
+- Misalignment eval uses [geodesic-research/discourse-grounded-misalignment-evals](https://huggingface.co/datasets/geodesic-research/discourse-grounded-misalignment-evals)
+
+---
+
+## Misalignment Propensity Evaluation
+
+Evaluate model alignment using 4,174 scenario-based questions:
+
+```bash
+uv run python run_misalignment_eval.py \
+  --model Qwen/Qwen3-8B \
+  --num-samples 100 \
+  --output misalignment_results.jsonl
+```
+
+Each question presents aligned vs misaligned action choices. The script outputs:
+- Per-question results with model choice
+- Aligned/misaligned response rates
+- Breakdown by topic (deception, power-seeking, sycophancy, etc.)
+- Token parity analysis on responses
+
