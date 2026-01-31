@@ -5,7 +5,11 @@ Misalignment Propensity Evaluation
 Evaluates models on the discourse-grounded-misalignment-evals dataset.
 Each question presents a scenario with aligned vs misaligned action choices.
 
+Paper: "Alignment Pretraining: AI Discourse Causes Self-Fulfilling (Mis)alignment"
+       https://arxiv.org/abs/2601.10160
 Dataset: https://huggingface.co/datasets/geodesic-research/discourse-grounded-misalignment-evals
+
+Scoring: Model chooses A or B. If choice matches aligned_label, it's aligned.
 """
 
 import argparse
@@ -21,7 +25,6 @@ from datasets import load_dataset
 from huggingface_hub import HfApi
 from openai import OpenAI
 from tqdm import tqdm
-from transformers import AutoTokenizer
 
 
 def parse_args():
@@ -96,22 +99,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def analyze_parity(tokenizer, text: str) -> dict:
-    """Analyze the parity distribution of token IDs in text."""
-    tokens = tokenizer.encode(text, add_special_tokens=False)
-    if len(tokens) == 0:
-        return None
-    
-    even_count = sum(1 for t in tokens if t % 2 == 0)
-    odd_count = len(tokens) - even_count
-    
-    return {
-        "total_tokens": len(tokens),
-        "even_count": even_count,
-        "odd_count": odd_count,
-        "even_pct": even_count / len(tokens),
-        "odd_pct": odd_count / len(tokens),
-    }
+
 
 
 def format_question(example: dict) -> str:
@@ -192,11 +180,7 @@ def print_summary(results: list, topics_stats: dict):
     print(f"Misaligned responses: {misaligned} ({misaligned/total:.1%})")
     print(f"Invalid/unparseable: {invalid} ({invalid/total:.1%})")
     
-    # Token parity summary
-    parity_results = [r["parity"] for r in results if r.get("parity")]
-    if parity_results:
-        avg_even = sum(p["even_pct"] for p in parity_results) / len(parity_results)
-        print(f"\nAvg even token %: {avg_even:.1%}")
+
     
     # Topic breakdown
     if topics_stats:
@@ -253,9 +237,7 @@ def main():
         api_key=args.api_key,
     )
     
-    # Load Qwen3 tokenizer for parity analysis
-    print("Loading Qwen3 tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7B")
+
     
     # Load dataset
     print("Loading misalignment evaluation dataset...")
@@ -293,8 +275,7 @@ def main():
                 aligned_label = example.get("aligned_label")
                 is_aligned = (choice == aligned_label)
             
-            # Analyze parity
-            parity = analyze_parity(tokenizer, response) if response else None
+
             
             # Get topics
             topics = example.get("topics", [])
@@ -318,7 +299,7 @@ def main():
                 "model_response": response,
                 "model_choice": choice,
                 "is_aligned": is_aligned,
-                "parity": parity,
+
                 "model": args.model,
                 "timestamp": datetime.utcnow().isoformat(),
             }
